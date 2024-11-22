@@ -60,26 +60,26 @@
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
 
-        // Ігрові змінні
+        // Розміри дороги та автомобіля
         const roadWidth = canvas.width;
         const roadHeight = canvas.height;
         const carWidth = 40;
         const carHeight = 70;
 
-        let carX = roadWidth / 2 - carWidth / 2;
-        let carY = roadHeight - carHeight - 10;
-        let obstacles = [];
-        let speed = 3;
-        let score = 0;
+        let carX = roadWidth / 2 - carWidth / 2; // Початкове положення автомобіля
+        let carY = roadHeight - carHeight - 10; // Відстань від нижнього краю
+        let obstacles = []; // Список перешкод
+        let speed = 3; // Початкова швидкість гри
+        let score = 0; // Лічильник очок
         let gameOver = false;
 
-        // Функція для малювання автомобіля
-        function drawCar(x, y, color = "red") {
-            ctx.fillStyle = color;
+        // Малювання автомобіля
+        function drawCar(x, y) {
+            ctx.fillStyle = "red";
             ctx.fillRect(x, y, carWidth, carHeight);
         }
 
-        // Функція для малювання перешкод
+        // Малювання перешкод
         function drawObstacles() {
             ctx.fillStyle = "blue";
             obstacles.forEach(obstacle => {
@@ -89,9 +89,10 @@
 
         // Спавн нової перешкоди
         function spawnObstacle() {
-            const obstacleWidth = Math.random() * 50 + 50;
+            const obstacleWidth = Math.random() * 60 + 40;
             const obstacleHeight = 20;
             const obstacleX = Math.random() * (roadWidth - obstacleWidth);
+
             obstacles.push({
                 x: obstacleX,
                 y: -obstacleHeight,
@@ -100,7 +101,7 @@
             });
         }
 
-        // Оновлення перешкод
+        // Оновлення положення перешкод
         function updateObstacles() {
             obstacles.forEach(obstacle => {
                 obstacle.y += speed;
@@ -108,7 +109,7 @@
                 if (obstacle.y > roadHeight) {
                     obstacles.splice(obstacles.indexOf(obstacle), 1);
                     score++;
-                    speed += 0.1; // Збільшення швидкості
+                    speed += 0.1; // Збільшення швидкості з кожною перешкодою
                     spawnObstacle();
                 }
             });
@@ -122,4 +123,56 @@
                     carX + carWidth > obstacle.x &&
                     carY < obstacle.y + obstacle.height &&
                     carY + carHeight > obstacle.y
-       
+                ) {
+                    gameOver = true;
+                }
+            });
+        }
+
+        // Відображення рахунку
+        function drawScore() {
+            ctx.fillStyle = "white";
+            ctx.font = "20px Arial";
+            ctx.fillText(`Очки: ${score}`, 10, 30);
+        }
+
+        // Основний цикл гри
+        function update() {
+            if (gameOver) {
+                ctx.fillStyle = "white";
+                ctx.font = "30px Arial";
+                ctx.fillText("Гра закінчена!", 70, roadHeight / 2);
+                return;
+            }
+
+            ctx.clearRect(0, 0, roadWidth, roadHeight);
+
+            drawCar(carX, carY);
+            updateObstacles();
+            drawObstacles();
+            checkCollision();
+            drawScore();
+
+            requestAnimationFrame(update);
+        }
+
+        // Рух автомобіля
+        function moveCar(direction) {
+            if (direction === "left" && carX > 0) {
+                carX -= 20;
+            }
+            if (direction === "right" && carX + carWidth < roadWidth) {
+                carX += 20;
+            }
+        }
+
+        // Дії кнопок управління
+        document.getElementById("left").addEventListener("click", () => moveCar("left"));
+        document.getElementById("right").addEventListener("click", () => moveCar("right"));
+
+        // Ініціалізація гри
+        spawnObstacle();
+        update();
+    </script>
+</body>
+</html>
