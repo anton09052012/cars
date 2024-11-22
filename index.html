@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мобільна Гра: Гонки</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #333;
+        }
+
+        canvas {
+            border: 2px solid #fff;
+            background: linear-gradient(#555, #222);
+            display: block;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 400px;
+            margin: 20px 0;
+        }
+
+        .button {
+            width: 80px;
+            height: 80px;
+            background-color: #fff;
+            color: #333;
+            font-size: 24px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            user-select: none;
+            cursor: pointer;
+        }
+
+        .button:active {
+            background-color: #ccc;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="300" height="500"></canvas>
+    <div class="controls">
+        <div class="button" id="left">◀</div>
+        <div class="button" id="right">▶</div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        // Ігрові змінні
+        const roadWidth = canvas.width;
+        const roadHeight = canvas.height;
+        const carWidth = 40;
+        const carHeight = 70;
+
+        let carX = roadWidth / 2 - carWidth / 2;
+        let carY = roadHeight - carHeight - 10;
+        let obstacles = [];
+        let speed = 3;
+        let score = 0;
+        let gameOver = false;
+
+        // Функція для малювання автомобіля
+        function drawCar(x, y, color = "red") {
+            ctx.fillStyle = color;
+            ctx.fillRect(x, y, carWidth, carHeight);
+        }
+
+        // Функція для малювання перешкод
+        function drawObstacles() {
+            ctx.fillStyle = "blue";
+            obstacles.forEach(obstacle => {
+                ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+            });
+        }
+
+        // Спавн нової перешкоди
+        function spawnObstacle() {
+            const obstacleWidth = Math.random() * 50 + 50;
+            const obstacleHeight = 20;
+            const obstacleX = Math.random() * (roadWidth - obstacleWidth);
+            obstacles.push({
+                x: obstacleX,
+                y: -obstacleHeight,
+                width: obstacleWidth,
+                height: obstacleHeight
+            });
+        }
+
+        // Оновлення перешкод
+        function updateObstacles() {
+            obstacles.forEach(obstacle => {
+                obstacle.y += speed;
+
+                if (obstacle.y > roadHeight) {
+                    obstacles.splice(obstacles.indexOf(obstacle), 1);
+                    score++;
+                    speed += 0.1; // Збільшення швидкості
+                    spawnObstacle();
+                }
+            });
+        }
+
+        // Перевірка зіткнень
+        function checkCollision() {
+            obstacles.forEach(obstacle => {
+                if (
+                    carX < obstacle.x + obstacle.width &&
+                    carX + carWidth > obstacle.x &&
+                    carY < obstacle.y + obstacle.height &&
+                    carY + carHeight > obstacle.y
+       
